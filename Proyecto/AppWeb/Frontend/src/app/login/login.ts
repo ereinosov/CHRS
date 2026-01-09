@@ -168,3 +168,8 @@ export class LoginComponent {
     }, 1500);
   }
 }
+
+class Login {
+}
+
+export default Login
