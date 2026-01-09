@@ -1,0 +1,629 @@
+USE [master]
+GO
+/****** Object:  Database [SSDC_V2]    Script Date: 8/1/2026 20:25:12 ******/
+CREATE DATABASE [SSDC_V2]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'SSDC_V2_Data', FILENAME = N'C:\Users\Usuario\SSDC_V2.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 1024KB )
+ LOG ON 
+( NAME = N'SSDC_V2_Log', FILENAME = N'C:\Users\Usuario\SSDC_V2.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 10%)
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
+GO
+ALTER DATABASE [SSDC_V2] SET COMPATIBILITY_LEVEL = 160
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [SSDC_V2].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [SSDC_V2] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET AUTO_CLOSE ON 
+GO
+ALTER DATABASE [SSDC_V2] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [SSDC_V2] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [SSDC_V2] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET  ENABLE_BROKER 
+GO
+ALTER DATABASE [SSDC_V2] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [SSDC_V2] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET RECOVERY SIMPLE 
+GO
+ALTER DATABASE [SSDC_V2] SET  MULTI_USER 
+GO
+ALTER DATABASE [SSDC_V2] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [SSDC_V2] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [SSDC_V2] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [SSDC_V2] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [SSDC_V2] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+ALTER DATABASE [SSDC_V2] SET OPTIMIZED_LOCKING = OFF 
+GO
+ALTER DATABASE [SSDC_V2] SET QUERY_STORE = ON
+GO
+ALTER DATABASE [SSDC_V2] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 1000, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
+GO
+USE [SSDC_V2]
+GO
+/****** Object:  Table [dbo].[AreaConocimiento]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AreaConocimiento](
+	[IDArea] [int] IDENTITY(1,1) NOT NULL,
+	[NombreArea] [varchar](100) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDArea] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[AutoridadAcademica]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AutoridadAcademica](
+	[IDAutoridad] [int] IDENTITY(1,1) NOT NULL,
+	[IDFacultad] [int] NOT NULL,
+	[IDCarrera] [int] NOT NULL,
+	[Nombres] [varchar](50) NOT NULL,
+	[Apellidos] [varchar](50) NOT NULL,
+	[Rol] [varchar](50) NOT NULL,
+	[FechaNacimiento] [date] NOT NULL,
+	[Correo] [varchar](100) NOT NULL,
+	[Estado] [bit] NOT NULL,
+	[IDUsuario] [int] NOT NULL,
+	[IDInstitucion] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDAutoridad] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[CalificacionEvaluacion]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[CalificacionEvaluacion](
+	[IDCalificacion] [int] IDENTITY(1,1) NOT NULL,
+	[IDEvaluacion] [int] NOT NULL,
+	[IDCriterio] [int] NOT NULL,
+	[PuntajeObtenido] [decimal](5, 2) NOT NULL,
+	[Observaciones] [varchar](255) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDCalificacion] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Carrera]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Carrera](
+	[IDCarrera] [int] IDENTITY(1,1) NOT NULL,
+	[IDFacultad] [int] NOT NULL,
+	[NombreCarrera] [varchar](50) NOT NULL,
+	[Modalidad] [varchar](50) NOT NULL,
+	[Estado] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDCarrera] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Convocatoria]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Convocatoria](
+	[IDConvocatoria] [int] IDENTITY(1,1) NOT NULL,
+	[IDSolicitud] [int] NOT NULL,
+	[Titulo] [varchar](100) NOT NULL,
+	[Descripcion] [varchar](255) NOT NULL,
+	[NumeroVacantes] [int] NOT NULL,
+	[FechaPublicacion] [date] NOT NULL,
+	[FechaInicio] [date] NOT NULL,
+	[FechaFin] [date] NOT NULL,
+	[EstadoConvocatoria] [varchar](50) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDConvocatoria] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ConvocatoriaMateria]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ConvocatoriaMateria](
+	[IDConvocatoriaMateria] [int] IDENTITY(1,1) NOT NULL,
+	[IDConvocatoria] [int] NOT NULL,
+	[IDMateria] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDConvocatoriaMateria] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[CriterioEvaluacion]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[CriterioEvaluacion](
+	[IDCriterio] [int] IDENTITY(1,1) NOT NULL,
+	[Nombre] [varchar](100) NOT NULL,
+	[PuntajeMaximo] [decimal](5, 2) NOT NULL,
+	[Estado] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDCriterio] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Documento]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Documento](
+	[IDDocumento] [int] IDENTITY(1,1) NOT NULL,
+	[IDPostulacion] [int] NOT NULL,
+	[IDTipoDocumento] [int] NOT NULL,
+	[FechaCarga] [datetime] NOT NULL,
+	[EstadoValidacion] [varchar](50) NOT NULL,
+	[RutaArchivo] [nvarchar](max) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDDocumento] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Entrevista]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Entrevista](
+	[IDEntrevista] [int] IDENTITY(1,1) NOT NULL,
+	[IDPostulacion] [int] NOT NULL,
+	[IDDecano] [int] NOT NULL,
+	[IDCoordinador] [int] NOT NULL,
+	[FechaEntrevista] [datetime] NULL,
+	[Puntaje] [decimal](5, 2) NULL,
+	[Observaciones] [varchar](255) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDEntrevista] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[EvaluacionMeritos]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[EvaluacionMeritos](
+	[IDEvaluacion] [int] IDENTITY(1,1) NOT NULL,
+	[IDPostulacion] [int] NOT NULL,
+	[IDDecano] [int] NOT NULL,
+	[IDCoordinador] [int] NOT NULL,
+	[Puntaje] [decimal](5, 2) NULL,
+	[Observaciones] [varchar](255) NULL,
+	[FechaEvaluacion] [date] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDEvaluacion] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Facultad]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Facultad](
+	[IDFacultad] [int] IDENTITY(1,1) NOT NULL,
+	[NombreFacultad] [varchar](100) NOT NULL,
+	[Estado] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDFacultad] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[InformeFinal]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[InformeFinal](
+	[IDInforme] [int] IDENTITY(1,1) NOT NULL,
+	[IDPostulacion] [int] NOT NULL,
+	[FechaEmision] [datetime] NOT NULL,
+	[ResultadoFinal] [varchar](50) NOT NULL,
+	[Observaciones] [varchar](255) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDInforme] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Institucion]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Institucion](
+	[IDInstitucion] [int] IDENTITY(1,1) NOT NULL,
+	[Nombre] [varchar](150) NOT NULL,
+	[Direccion] [varchar](255) NOT NULL,
+	[Correo] [varchar](100) NOT NULL,
+	[Telefono] [varchar](30) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDInstitucion] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Materia]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Materia](
+	[IDMateria] [int] IDENTITY(1,1) NOT NULL,
+	[IDCarrera] [int] NOT NULL,
+	[NombreMateria] [varchar](100) NOT NULL,
+	[Estado] [bit] NOT NULL,
+	[Nivel] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDMateria] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[PerfilDocente]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PerfilDocente](
+	[IDPerfil] [int] IDENTITY(1,1) NOT NULL,
+	[IDSolicitud] [int] NOT NULL,
+	[NivelAcademico] [varchar](100) NOT NULL,
+	[Observaciones] [varchar](255) NULL,
+	[IDArea] [int] NOT NULL,
+	[ExperienciaProfesionalMin] [int] NOT NULL,
+	[ExperienciaDocenteMin] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDPerfil] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Postulacion]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Postulacion](
+	[IDPostulacion] [int] IDENTITY(1,1) NOT NULL,
+	[IDPostulante] [int] NOT NULL,
+	[IDConvocatoria] [int] NOT NULL,
+	[Fecha] [datetime] NOT NULL,
+	[EstadoPostulacion] [varchar](50) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDPostulacion] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Postulante]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Postulante](
+	[IDPostulante] [int] IDENTITY(1,1) NOT NULL,
+	[NombresPostulante] [varchar](50) NOT NULL,
+	[ApellidosPostulante] [varchar](50) NOT NULL,
+	[Identificacion] [varchar](20) NOT NULL,
+	[CorreoPostulante] [varchar](100) NOT NULL,
+	[TelefonoPostulante] [varchar](30) NOT NULL,
+	[FechaNacimiento] [date] NOT NULL,
+	[IDUsuario] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDPostulante] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[Identificacion] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Resolucion]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Resolucion](
+	[IDResolucion] [int] IDENTITY(1,1) NOT NULL,
+	[IDSolicitud] [int] NOT NULL,
+	[IDAprobador] [int] NOT NULL,
+	[NumeroResolucion] [varchar](50) NOT NULL,
+	[FechaEmision] [date] NOT NULL,
+	[Observaciones] [varchar](255) NULL,
+	[EstadoSolicitud] [varchar](50) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDResolucion] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ResultadosIA]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ResultadosIA](
+	[IDResultadoIA] [int] IDENTITY(1,1) NOT NULL,
+	[IDDocumento] [int] NOT NULL,
+	[Resultado] [varchar](50) NOT NULL,
+	[Observaciones] [varchar](255) NULL,
+	[FechaRevision] [datetime] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDResultadoIA] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[SolicitudDocente]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[SolicitudDocente](
+	[IDSolicitud] [int] IDENTITY(1,1) NOT NULL,
+	[IDAutoridad] [int] NOT NULL,
+	[FechaSolicitud] [date] NOT NULL,
+	[EstadoSolicitud] [varchar](50) NOT NULL,
+	[Justificacion] [varchar](255) NOT NULL,
+	[CantidadDocentes] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDSolicitud] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[TipoDocumento]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TipoDocumento](
+	[IDTipoDocumento] [int] IDENTITY(1,1) NOT NULL,
+	[Nombre] [varchar](50) NOT NULL,
+	[Obligatorio] [bit] NOT NULL,
+	[Estado] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDTipoDocumento] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Usuario]    Script Date: 8/1/2026 20:25:12 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Usuario](
+	[IDUsuario] [int] IDENTITY(1,1) NOT NULL,
+	[UsuarioBD] [varchar](100) NOT NULL,
+	[ClaveBD] [varchar](max) NOT NULL,
+	[UsuarioApp] [varchar](100) NOT NULL,
+	[ClaveApp] [varchar](max) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IDUsuario] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[Postulacion] ADD  DEFAULT ('Pendiente') FOR [EstadoPostulacion]
+GO
+ALTER TABLE [dbo].[AutoridadAcademica]  WITH CHECK ADD  CONSTRAINT [FK_Autoridad_Carrera] FOREIGN KEY([IDCarrera])
+REFERENCES [dbo].[Carrera] ([IDCarrera])
+GO
+ALTER TABLE [dbo].[AutoridadAcademica] CHECK CONSTRAINT [FK_Autoridad_Carrera]
+GO
+ALTER TABLE [dbo].[AutoridadAcademica]  WITH CHECK ADD  CONSTRAINT [FK_Autoridad_Facultad] FOREIGN KEY([IDFacultad])
+REFERENCES [dbo].[Facultad] ([IDFacultad])
+GO
+ALTER TABLE [dbo].[AutoridadAcademica] CHECK CONSTRAINT [FK_Autoridad_Facultad]
+GO
+ALTER TABLE [dbo].[AutoridadAcademica]  WITH CHECK ADD  CONSTRAINT [FK_Autoridad_Institucion] FOREIGN KEY([IDInstitucion])
+REFERENCES [dbo].[Institucion] ([IDInstitucion])
+GO
+ALTER TABLE [dbo].[AutoridadAcademica] CHECK CONSTRAINT [FK_Autoridad_Institucion]
+GO
+ALTER TABLE [dbo].[AutoridadAcademica]  WITH CHECK ADD  CONSTRAINT [FK_Autoridad_Usuario] FOREIGN KEY([IDUsuario])
+REFERENCES [dbo].[Usuario] ([IDUsuario])
+GO
+ALTER TABLE [dbo].[AutoridadAcademica] CHECK CONSTRAINT [FK_Autoridad_Usuario]
+GO
+ALTER TABLE [dbo].[CalificacionEvaluacion]  WITH CHECK ADD  CONSTRAINT [FK_Calificacion_Criterio] FOREIGN KEY([IDCriterio])
+REFERENCES [dbo].[CriterioEvaluacion] ([IDCriterio])
+GO
+ALTER TABLE [dbo].[CalificacionEvaluacion] CHECK CONSTRAINT [FK_Calificacion_Criterio]
+GO
+ALTER TABLE [dbo].[CalificacionEvaluacion]  WITH CHECK ADD  CONSTRAINT [FK_Calificacion_Evaluacion] FOREIGN KEY([IDEvaluacion])
+REFERENCES [dbo].[EvaluacionMeritos] ([IDEvaluacion])
+GO
+ALTER TABLE [dbo].[CalificacionEvaluacion] CHECK CONSTRAINT [FK_Calificacion_Evaluacion]
+GO
+ALTER TABLE [dbo].[Carrera]  WITH CHECK ADD  CONSTRAINT [FK_Carrera_Facultad] FOREIGN KEY([IDFacultad])
+REFERENCES [dbo].[Facultad] ([IDFacultad])
+GO
+ALTER TABLE [dbo].[Carrera] CHECK CONSTRAINT [FK_Carrera_Facultad]
+GO
+ALTER TABLE [dbo].[Convocatoria]  WITH CHECK ADD  CONSTRAINT [FK_Convocatoria_Solicitud] FOREIGN KEY([IDSolicitud])
+REFERENCES [dbo].[SolicitudDocente] ([IDSolicitud])
+GO
+ALTER TABLE [dbo].[Convocatoria] CHECK CONSTRAINT [FK_Convocatoria_Solicitud]
+GO
+ALTER TABLE [dbo].[ConvocatoriaMateria]  WITH CHECK ADD  CONSTRAINT [FK_CM_Convocatoria] FOREIGN KEY([IDConvocatoria])
+REFERENCES [dbo].[Convocatoria] ([IDConvocatoria])
+GO
+ALTER TABLE [dbo].[ConvocatoriaMateria] CHECK CONSTRAINT [FK_CM_Convocatoria]
+GO
+ALTER TABLE [dbo].[ConvocatoriaMateria]  WITH CHECK ADD  CONSTRAINT [FK_CM_Materia] FOREIGN KEY([IDMateria])
+REFERENCES [dbo].[Materia] ([IDMateria])
+GO
+ALTER TABLE [dbo].[ConvocatoriaMateria] CHECK CONSTRAINT [FK_CM_Materia]
+GO
+ALTER TABLE [dbo].[Documento]  WITH CHECK ADD  CONSTRAINT [FK_Documento_Postulacion] FOREIGN KEY([IDPostulacion])
+REFERENCES [dbo].[Postulacion] ([IDPostulacion])
+GO
+ALTER TABLE [dbo].[Documento] CHECK CONSTRAINT [FK_Documento_Postulacion]
+GO
+ALTER TABLE [dbo].[Documento]  WITH CHECK ADD  CONSTRAINT [FK_Documento_Tipo] FOREIGN KEY([IDTipoDocumento])
+REFERENCES [dbo].[TipoDocumento] ([IDTipoDocumento])
+GO
+ALTER TABLE [dbo].[Documento] CHECK CONSTRAINT [FK_Documento_Tipo]
+GO
+ALTER TABLE [dbo].[Entrevista]  WITH CHECK ADD  CONSTRAINT [FK_Entrevista_Coordinador] FOREIGN KEY([IDCoordinador])
+REFERENCES [dbo].[AutoridadAcademica] ([IDAutoridad])
+GO
+ALTER TABLE [dbo].[Entrevista] CHECK CONSTRAINT [FK_Entrevista_Coordinador]
+GO
+ALTER TABLE [dbo].[Entrevista]  WITH CHECK ADD  CONSTRAINT [FK_Entrevista_Decano] FOREIGN KEY([IDDecano])
+REFERENCES [dbo].[AutoridadAcademica] ([IDAutoridad])
+GO
+ALTER TABLE [dbo].[Entrevista] CHECK CONSTRAINT [FK_Entrevista_Decano]
+GO
+ALTER TABLE [dbo].[Entrevista]  WITH CHECK ADD  CONSTRAINT [FK_Entrevista_Postulacion] FOREIGN KEY([IDPostulacion])
+REFERENCES [dbo].[Postulacion] ([IDPostulacion])
+GO
+ALTER TABLE [dbo].[Entrevista] CHECK CONSTRAINT [FK_Entrevista_Postulacion]
+GO
+ALTER TABLE [dbo].[EvaluacionMeritos]  WITH CHECK ADD  CONSTRAINT [FK_Evaluacion_Coordinador] FOREIGN KEY([IDCoordinador])
+REFERENCES [dbo].[AutoridadAcademica] ([IDAutoridad])
+GO
+ALTER TABLE [dbo].[EvaluacionMeritos] CHECK CONSTRAINT [FK_Evaluacion_Coordinador]
+GO
+ALTER TABLE [dbo].[EvaluacionMeritos]  WITH CHECK ADD  CONSTRAINT [FK_Evaluacion_Decano] FOREIGN KEY([IDDecano])
+REFERENCES [dbo].[AutoridadAcademica] ([IDAutoridad])
+GO
+ALTER TABLE [dbo].[EvaluacionMeritos] CHECK CONSTRAINT [FK_Evaluacion_Decano]
+GO
+ALTER TABLE [dbo].[EvaluacionMeritos]  WITH CHECK ADD  CONSTRAINT [FK_Evaluacion_Postulacion] FOREIGN KEY([IDPostulacion])
+REFERENCES [dbo].[Postulacion] ([IDPostulacion])
+GO
+ALTER TABLE [dbo].[EvaluacionMeritos] CHECK CONSTRAINT [FK_Evaluacion_Postulacion]
+GO
+ALTER TABLE [dbo].[InformeFinal]  WITH CHECK ADD  CONSTRAINT [FK_Informe_Postulacion] FOREIGN KEY([IDPostulacion])
+REFERENCES [dbo].[Postulacion] ([IDPostulacion])
+GO
+ALTER TABLE [dbo].[InformeFinal] CHECK CONSTRAINT [FK_Informe_Postulacion]
+GO
+ALTER TABLE [dbo].[Materia]  WITH CHECK ADD  CONSTRAINT [FK_Materia_Carrera] FOREIGN KEY([IDCarrera])
+REFERENCES [dbo].[Carrera] ([IDCarrera])
+GO
+ALTER TABLE [dbo].[Materia] CHECK CONSTRAINT [FK_Materia_Carrera]
+GO
+ALTER TABLE [dbo].[PerfilDocente]  WITH CHECK ADD  CONSTRAINT [FK_Perfil_Area] FOREIGN KEY([IDArea])
+REFERENCES [dbo].[AreaConocimiento] ([IDArea])
+GO
+ALTER TABLE [dbo].[PerfilDocente] CHECK CONSTRAINT [FK_Perfil_Area]
+GO
+ALTER TABLE [dbo].[PerfilDocente]  WITH CHECK ADD  CONSTRAINT [FK_Perfil_Solicitud] FOREIGN KEY([IDSolicitud])
+REFERENCES [dbo].[SolicitudDocente] ([IDSolicitud])
+GO
+ALTER TABLE [dbo].[PerfilDocente] CHECK CONSTRAINT [FK_Perfil_Solicitud]
+GO
+ALTER TABLE [dbo].[Postulacion]  WITH CHECK ADD  CONSTRAINT [FK_Postulacion_Convocatoria] FOREIGN KEY([IDConvocatoria])
+REFERENCES [dbo].[Convocatoria] ([IDConvocatoria])
+GO
+ALTER TABLE [dbo].[Postulacion] CHECK CONSTRAINT [FK_Postulacion_Convocatoria]
+GO
+ALTER TABLE [dbo].[Postulacion]  WITH CHECK ADD  CONSTRAINT [FK_Postulacion_Postulante] FOREIGN KEY([IDPostulante])
+REFERENCES [dbo].[Postulante] ([IDPostulante])
+GO
+ALTER TABLE [dbo].[Postulacion] CHECK CONSTRAINT [FK_Postulacion_Postulante]
+GO
+ALTER TABLE [dbo].[Postulante]  WITH CHECK ADD  CONSTRAINT [FK_Postulante_Usuario] FOREIGN KEY([IDUsuario])
+REFERENCES [dbo].[Usuario] ([IDUsuario])
+GO
+ALTER TABLE [dbo].[Postulante] CHECK CONSTRAINT [FK_Postulante_Usuario]
+GO
+ALTER TABLE [dbo].[Resolucion]  WITH CHECK ADD  CONSTRAINT [FK_Resolucion_Autoridad] FOREIGN KEY([IDAprobador])
+REFERENCES [dbo].[AutoridadAcademica] ([IDAutoridad])
+GO
+ALTER TABLE [dbo].[Resolucion] CHECK CONSTRAINT [FK_Resolucion_Autoridad]
+GO
+ALTER TABLE [dbo].[Resolucion]  WITH CHECK ADD  CONSTRAINT [FK_Resolucion_Solicitud] FOREIGN KEY([IDSolicitud])
+REFERENCES [dbo].[SolicitudDocente] ([IDSolicitud])
+GO
+ALTER TABLE [dbo].[Resolucion] CHECK CONSTRAINT [FK_Resolucion_Solicitud]
+GO
+ALTER TABLE [dbo].[ResultadosIA]  WITH CHECK ADD  CONSTRAINT [FK_IA_Documento] FOREIGN KEY([IDDocumento])
+REFERENCES [dbo].[Documento] ([IDDocumento])
+GO
+ALTER TABLE [dbo].[ResultadosIA] CHECK CONSTRAINT [FK_IA_Documento]
+GO
+ALTER TABLE [dbo].[SolicitudDocente]  WITH CHECK ADD  CONSTRAINT [FK_Solicitud_Autoridad] FOREIGN KEY([IDAutoridad])
+REFERENCES [dbo].[AutoridadAcademica] ([IDAutoridad])
+GO
+ALTER TABLE [dbo].[SolicitudDocente] CHECK CONSTRAINT [FK_Solicitud_Autoridad]
+GO
+USE [master]
+GO
+ALTER DATABASE [SSDC_V2] SET  READ_WRITE 
+GO
