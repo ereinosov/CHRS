@@ -142,7 +142,7 @@ export class LoginComponent {
 
     // Verificar si el formulario es válido
     if (this.loginForm.invalid) {
-      console.log('❌ Formulario inválido - Mostrando errores...');
+      console.log(' Formulario inválido - Mostrando errores...');
       console.log('Email válido:', this.email?.valid);
       console.log('Password válido:', this.password?.valid);
       console.log('Errores email:', this.email?.errors);
@@ -151,7 +151,7 @@ export class LoginComponent {
     }
 
     // Si llega aquí, el formulario es válido
-    console.log('✅ Formulario válido, procediendo con login...');
+    console.log(' Formulario válido, procediendo con login...');
     this.isLoading = true;
 
     const { email, password, rememberMe } = this.loginForm.value;
@@ -161,7 +161,7 @@ export class LoginComponent {
     // Simulación de llamada API
     setTimeout(() => {
       this.isLoading = false;
-      console.log('✅ Login exitoso');
+      console.log('Login exitoso');
       alert('Login exitoso - ' + email);
       // Aquí normalmente redirigirías al usuario
       // this.router.navigate(['/dashboard']);
