@@ -1,8 +1,14 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './login/login'; // Verifica que la ruta al archivo sea correcta
+import { LoginComponent } from './login/login';
+import { TestConexionComponent } from './test-conexion/test-conexion';
 
 export const routes: Routes = [
-  // Esta línea es la que hace la magia: si la URL está vacía, te manda a /login
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  // Te lleva directo a la prueba
+  { path: '', redirectTo: 'test', pathMatch: 'full' },
+
+  // Ruta para probar la conexión
+  { path: 'test', component: TestConexionComponent },
+
+  // Tu login
   { path: 'login', component: LoginComponent }
 ];
