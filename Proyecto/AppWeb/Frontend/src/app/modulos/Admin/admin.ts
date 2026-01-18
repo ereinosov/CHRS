@@ -2,28 +2,27 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-// Importamos los componentes compartidos
+// AJUSTA ESTAS RUTAS si tu carpeta se llama diferente
 import { NavbarComponent } from '../../component/navbar';
 import { FooterComponent } from '../../component/footer';
 
 @Component({
-  selector: 'app-evaluador',
+  selector: 'app-admin',
   standalone: true,
   imports: [
     CommonModule,
     NavbarComponent,
     FooterComponent
   ],
-  templateUrl: './evaluador.html',
-  styleUrls: ['./evaluador.scss']
+  templateUrl: './admin.html',
+  styleUrls: ['./admin.scss']
 })
-export class EvaluadorComponent {
+export class AdminComponent {
 
   constructor(private router: Router) {}
 
   navegarA(ruta: string): void {
     console.log('Navegando a:', ruta);
-    // Aquí iría la redirección real:
-    // this.router.navigate([`/evaluador/${ruta}`]);
+    // this.router.navigate([`/admin/${ruta}`]);
   }
 }

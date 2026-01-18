@@ -3,6 +3,7 @@ package org.uteq.backend.usuario.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.uteq.backend.usuario.entity.Usuario;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IUsuarioRepository extends JpaRepository<Usuario, Long> {
@@ -23,4 +24,8 @@ public interface IUsuarioRepository extends JpaRepository<Usuario, Long> {
 
     // Verificar si existe un email
     Boolean existsByEmail(String email);
+
+    <S extends Usuario> List<S> findAll(org.springframework.data.domain.Example<S> example, org.springframework.data.domain.Sort sort);
+
+    <S extends Usuario> List<S> findAll(org.springframework.data.domain.Example<S> example);
 }
