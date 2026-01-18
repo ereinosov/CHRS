@@ -8,4 +8,7 @@ public class UsuarioRepositoryImpl implements  IUsuarioRepository{
         System.out.println("Guardando informacion");
         return usuario;
     }
+    public Usuario searchByUsername(String username) {
+        return null;
+    }
 }
