@@ -27,16 +27,19 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         // 2. Convertir entidad Usuario a un UserDetails de Spring Security
-        return User.builder()
-                .username(usuario.getUsername())
-                .password(usuario.getPassword())
+       /* return User.builder()
+                .username(usuario.getUsuario_app())
+                .password(usuario.getClave_app())
                 .authorities(usuario.getRoles().stream()
                         .map(rol -> new SimpleGrantedAuthority(rol.getNombre().name()))
                         .collect(Collectors.toList()))
                 .accountExpired(false)
                 .accountLocked(!usuario.getActivo())
                 .credentialsExpired(false)
-                .disabled(!usuario.getActivo())
+              //  .disabled(!usuario.get())
                 .build();
+    }*/
+        return User.builder().username(usuario.getUsuario_app())
+                .password(usuario.getClave_app()).build();
     }
 }
