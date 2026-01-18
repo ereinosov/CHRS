@@ -1,3 +1,4 @@
+@use "sass:color";
 // Colors
 $primary: #00A63E;
 $dark: #016630;
@@ -207,7 +208,7 @@ form {
   }
 
   &:hover {
-    border-color: darken($border, 10%);
+    border-color: color.adjust($border, $lightness: -10%);
   }
 
   &:focus {

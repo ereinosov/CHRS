@@ -4,7 +4,7 @@ import { TestConexionComponent } from './test-conexion/test-conexion';
 
 export const routes: Routes = [
   // Te lleva directo a la prueba
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', redirectTo: 'test', pathMatch: 'full' },
 
   // Ruta para probar la conexión
   { path: 'test', component: TestConexionComponent },
