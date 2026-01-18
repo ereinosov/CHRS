@@ -6,7 +6,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-
+//s
 public class usuario {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
