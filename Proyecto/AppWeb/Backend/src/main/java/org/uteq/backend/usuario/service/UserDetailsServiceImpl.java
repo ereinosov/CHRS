@@ -31,7 +31,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .username(usuario.getUsuario_app())
                 .password(usuario.getClave_app())
                 .authorities(usuario.getRoles().stream()
-                        .map(rol -> new SimpleGrantedAuthority(rol.getNombre().name()))
+                          .map(rol -> new SimpleGrantedAuthority(rol.getNombre().name()))
                         .collect(Collectors.toList()))
                 .accountExpired(false)
                 .accountLocked(!usuario.getActivo())

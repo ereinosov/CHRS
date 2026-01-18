@@ -1,32 +1,29 @@
 package org.uteq.backend.rol.entity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "roles")
 public class Rol {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id_rol;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(name = "nombre", nullable = false, unique = true)
     private RolNombre nombre;
 
-    // Constructores
-    public Rol() {
-    }
-
-    public Rol(RolNombre nombre) {
-        this.nombre = nombre;
-    }
-
     // Getters y Setters
-    public Long getId() {
-        return id;
+    public Long getId_rol() {
+        return id_rol;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setId_rol(Long id_rol) {
+        this.id_rol = id_rol;
     }
 
     public RolNombre getNombre() {
@@ -36,5 +33,4 @@ public class Rol {
     public void setNombre(RolNombre nombre) {
         this.nombre = nombre;
     }
-
 }
