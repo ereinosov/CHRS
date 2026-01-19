@@ -25,7 +25,7 @@
         </div>
 
         <div class="dropdown-body">
-          <div *ngFor="let notif of notificaciones" class="notif-item" [class.unread]="!notif.leido">
+          <div *ngFor="let notif of notificaciones" class="notif-item" [class.unread]="!notif.leida">
             <div class="notif-icon" [ngClass]="notif.tipo">
               <span *ngIf="notif.tipo === 'success'">✓</span>
               <span *ngIf="notif.tipo === 'warning'">!</span>

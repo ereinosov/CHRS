@@ -1,78 +1,75 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
-// Asegúrate de que la ruta al servicio de notificaciones sea correcta
-import { NotificationService, Notificacion } from '../services/notification.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.scss']
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent {
 
-  // VARIABLES DE USUARIO (Dinámicas para la BD)
-  nombreUsuario: string = '';
-  rolUsuario: string = '';
-  iniciales: string = '';
-
-  // VARIABLES DE NOTIFICACIONES
+  // Propiedades para notificaciones
   showNotifications = false;
-  notificaciones: Notificacion[] = [];
-  unreadCount = 0;
+  unreadCount = 2;
+  notificaciones = [
+    {
+      id: 1,
+      titulo: 'Nueva postulación',
+      mensaje: 'Tienes una nueva postulación pendiente',
+      leida: false,
+      tipo: 'warning',  // ← AGREGAR
+      hora: 'Hace 2 horas'  // ← AGREGAR
+    },
+    {
+      id: 2,
+      titulo: 'Documento aprobado',
+      mensaje: 'Tu documento ha sido aprobado',
+      leida: false,
+      tipo: 'success',  // ← AGREGAR
+      hora: 'Hace 5 horas'  // ← AGREGAR
+    },
+    {
+      id: 3,
+      titulo: 'Entrevista programada',
+      mensaje: 'Se ha programado tu entrevista',
+      leida: true,
+      tipo: 'info',  // ← AGREGAR
+      hora: 'Hace 1 día'  // ← AGREGAR
+    }
+  ];
 
-  constructor(
-    private router: Router,
-    private notifService: NotificationService
-  ) {}
+  // Propiedades del usuario
+  nombreUsuario = '';
+  rolUsuario = '';
+  iniciales = '';
 
-  ngOnInit() {
+  constructor(private router: Router) {
     this.cargarDatosUsuario();
-    this.cargarNotificaciones();
   }
 
-  // --- 1. LÓGICA DE USUARIO ---
-  cargarDatosUsuario() {
-    // ⚠️ AQUÍ CONECTARÁS TU BASE DE DATOS LUEGO.
-    // Por ahora, simulamos que recuperamos los datos del Login (ej. localStorage)
-
-    // Simulación:
-    const dataSimulada = {
-      nombre: localStorage.getItem('nombre_usuario') || 'Usuario Desconocido',
-      rol: localStorage.getItem('rol_usuario') || 'Invitado'
-    };
-
-    this.nombreUsuario = dataSimulada.nombre;
-    this.rolUsuario = dataSimulada.rol;
-
-    // Extraer la primera letra para el avatar
-    this.iniciales = this.nombreUsuario.charAt(0).toUpperCase();
+  cargarDatosUsuario(): void {
+    this.nombreUsuario = localStorage.getItem('usuario') || 'Usuario';
+    this.rolUsuario = localStorage.getItem('rol') || 'Sin rol';
+    this.iniciales = this.obtenerIniciales(this.nombreUsuario);
   }
 
-  logout() {
-    console.log('Cerrando sesión...');
-    // 1. Limpiar almacenamiento local
-    localStorage.clear();
-    // 2. Redirigir al login
-    this.router.navigate(['/login']);
+  obtenerIniciales(nombre: string): string {
+    const palabras = nombre.split(' ');
+    if (palabras.length >= 2) {
+      return (palabras[0][0] + palabras[1][0]).toUpperCase();
+    }
+    return nombre.substring(0, 2).toUpperCase();
   }
 
-  // --- 2. LÓGICA DE NOTIFICACIONES ---
-  cargarNotificaciones() {
-    // Detectamos rol por la URL para pruebas, luego usarás this.rolUsuario
-    let rolParaNotis = '';
-    if (this.router.url.includes('postulante')) rolParaNotis = 'postulante';
-    else if (this.router.url.includes('evaluador')) rolParaNotis = 'evaluador';
-    else if (this.router.url.includes('admin')) rolParaNotis = 'admin';
-    else rolParaNotis = 'postulante'; // Default para pruebas
-
-    this.notificaciones = this.notifService.getNotificaciones(rolParaNotis);
-    this.unreadCount = this.notifService.getUnreadCount(rolParaNotis);
-  }
-
-  toggleNotifications() {
+  toggleNotifications(): void {
     this.showNotifications = !this.showNotifications;
+  }
+
+  logout(): void {
+    localStorage.clear();
+    this.router.navigate(['/login']);
   }
 }

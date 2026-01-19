@@ -1,4 +1,5 @@
 package org.uteq.backend.entities;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -6,17 +7,30 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-//s
+@Table(name = "usuario")
 public class usuario {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_usuario;
-    @Column(name ="usuario_bd", unique = true, nullable = false)
-    private String usuario_bd;
-    @Column(name ="clave_bd", nullable = false)
-    private String clave_bd;
-    @Column(name ="usuario_app", unique = true, nullable = false)
-    private String usuario_app;
-    @Column(name ="clave_app", nullable = false)
-    private String clave_app;
+
+    @Column(name = "usuario_bd")
+    private String usuarioBd;
+
+    @Column(name = "clave_bd")
+    private String claveBd;
+
+    @Column(name = "usuario_app")
+    private String usuarioApp;
+
+    @Column(name = "clave_app")
+    private String claveApp;
+
+    @Column(name = "rol")
+    private String rol;
+
+    @Column(name = "id_rol")
+    private Long id_rol;
+
+    @Column(name = "activo")
+    private Boolean activo;
 }

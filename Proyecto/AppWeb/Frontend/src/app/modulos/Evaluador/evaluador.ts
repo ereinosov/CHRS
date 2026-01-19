@@ -1,19 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-
-// Importamos los componentes compartidos
 import { NavbarComponent } from '../../component/navbar';
-import { FooterComponent } from '../../component/footer';
+import { FooterComponent } from '../../component/footer.component';
 
 @Component({
   selector: 'app-evaluador',
   standalone: true,
-  imports: [
-    CommonModule,
-    NavbarComponent,
-    FooterComponent
-  ],
+  imports: [CommonModule, NavbarComponent, FooterComponent],
   templateUrl: './evaluador.html',
   styleUrls: ['./evaluador.scss']
 })
@@ -22,8 +16,6 @@ export class EvaluadorComponent {
   constructor(private router: Router) {}
 
   navegarA(ruta: string): void {
-    console.log('Navegando a:', ruta);
-    // Aquí iría la redirección real:
-    // this.router.navigate([`/evaluador/${ruta}`]);
+    this.router.navigate([`/evaluador/${ruta}`]);
   }
 }

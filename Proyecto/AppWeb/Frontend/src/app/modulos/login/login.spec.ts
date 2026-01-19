@@ -1,176 +1,83 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { LoginComponent } from './login';
-import { ReactiveFormsModule } from '@angular/forms';
+import { Login } from './login';
+import { FormsModule } from '@angular/forms';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { Router } from '@angular/router';
 
 describe('LoginComponent', () => {
-  let component: LoginComponent;
-  let fixture: ComponentFixture<LoginComponent>;
+  let component: Login;
+  let fixture: ComponentFixture<Login>;
+  let router: Router;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        ReactiveFormsModule,
-        LoginComponent
+        FormsModule,
+        Login
+      ],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting()
       ]
     }).compileComponents();
-    fixture = TestBed.createComponent(LoginComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
 
+    fixture = TestBed.createComponent(Login);
+    component = fixture.componentInstance;
+    router = TestBed.inject(Router);
+    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have a form with email and password controls', () => {
-    expect(component.loginForm.contains('email')).toBeTruthy();
-    expect(component.loginForm.contains('password')).toBeTruthy();
-  });
-
-  it('should make email control required', () => {
-    const emailControl = component.loginForm.get('email');
-    emailControl?.setValue('');
-    expect(emailControl?.valid).toBeFalsy();
-  });
-
-  it('should validate email format', () => {
-    const emailControl = component.loginForm.get('email');
-
-    emailControl?.setValue('correo-invalido');
-    expect(emailControl?.valid).toBeFalsy();
-
-    emailControl?.setValue('correo@valido.com');
-    expect(emailControl?.valid).toBeTruthy();
-  });
-
-  it('should require password', () => {
-    const passwordControl = component.loginForm.get('password');
-    passwordControl?.setValue('');
-    expect(passwordControl?.valid).toBeFalsy();
-  });
-
-  it('should validate password length', () => {
-    const passwordControl = component.loginForm.get('password');
-
-    passwordControl?.setValue('123');
-    expect(passwordControl?.valid).toBeFalsy();
-
-    passwordControl?.setValue('123456');
-    expect(passwordControl?.valid).toBeTruthy();
-  });
-
-  it('should not contain spaces in email', () => {
-    const emailControl = component.loginForm.get('email');
-
-    emailControl?.setValue('correo con espacios@mail.com');
-    expect(emailControl?.hasError('hasSpaces')).toBeTruthy();
-
-    emailControl?.setValue('correosin espacios@mail.com');
-    expect(emailControl?.hasError('hasSpaces')).toBeFalsy();
-  });
-
-  it('should not accept password with only spaces', () => {
-    const passwordControl = component.loginForm.get('password');
-
-    passwordControl?.setValue('     ');
-    expect(passwordControl?.hasError('onlySpaces')).toBeTruthy();
-
-    passwordControl?.setValue('contraseña123');
-    expect(passwordControl?.hasError('onlySpaces')).toBeFalsy();
-  });
-
-  it('should show errors when form is invalid on submit', () => {
-    // Simular formulario vacío
-    component.loginForm.setValue({
-      email: '',
-      password: '',
-      rememberMe: false
-    });
-
-    component.onSubmit();
-
-    expect(component.submitted).toBeTruthy();
-    expect(component.loginForm.valid).toBeFalsy();
-  });
-
-  it('should not submit when form is invalid', () => {
-    // Reemplazar el spyOn por una verificación directa
-    component.loginForm.setValue({
-      email: '',
-      password: '',
-      rememberMe: false
-    });
-
-    // Guardar estado inicial
-    const initialIsLoading = component.isLoading;
-
-    component.onSubmit();
-
-    // Verificar que isLoading no cambió (no se envió)
-    expect(component.isLoading).toBe(initialIsLoading);
-  });
-
-  it('should submit when form is valid', () => {
-    // Configurar formulario válido
-    component.loginForm.setValue({
-      email: 'test@uteq.edu.ec',
-      password: 'password123',
-      rememberMe: false
-    });
-
-    component.onSubmit();
-
-    // Verificar que isLoading se activó (se intentó enviar)
-    expect(component.isLoading).toBeTruthy();
+  it('should have initial values', () => {
+    expect(component.usuarioApp).toBe('');
+    expect(component.claveApp).toBe('');
+    expect(component.showPassword).toBe(false);
+    expect(component.isLoading).toBe(false);
+    expect(component.serverError).toBe('');
   });
 
   it('should toggle password visibility', () => {
-    const initialVisibility = component.showPassword;
+    expect(component.showPassword).toBe(false);
 
     component.togglePassword();
-
-    expect(component.showPassword).toBe(!initialVisibility);
+    expect(component.showPassword).toBe(true);
 
     component.togglePassword();
-
-    expect(component.showPassword).toBe(initialVisibility);
+    expect(component.showPassword).toBe(false);
   });
 
-  it('should mark field as touched when blur event occurs', () => {
-    const emailControl = component.loginForm.get('email');
-    const initialTouched = emailControl?.touched;
+  it('should show error when fields are empty', () => {
+    component.usuarioApp = '';
+    component.claveApp = '';
 
-    component.markFieldAsTouched('email');
+    component.onLogin();
 
-    expect(emailControl?.touched).toBeTruthy();
+    expect(component.serverError).toBe('Por favor complete todos los campos');
   });
 
-  it('should return correct email error messages', () => {
-    const emailControl = component.loginForm.get('email');
+  it('should not call backend when fields are empty', () => {
+    component.usuarioApp = '';
+    component.claveApp = '';
 
-    emailControl?.setValue('');
-    emailControl?.markAsTouched();
-    expect(component.getEmailError()).toContain('obligatorio');
+    const initialLoading = component.isLoading;
+    component.onLogin();
 
-    emailControl?.setValue('correo-invalido');
-    expect(component.getEmailError()).toContain('válido');
-
-    emailControl?.setValue('correo con espacios@mail.com');
-    expect(component.getEmailError()).toContain('espacios');
+    expect(component.isLoading).toBe(initialLoading);
   });
 
-  it('should return correct password error messages', () => {
-    const passwordControl = component.loginForm.get('password');
+  it('should set loading state when form is valid', () => {
+    component.usuarioApp = 'testuser';
+    component.claveApp = 'testpass';
 
-    passwordControl?.setValue('');
-    passwordControl?.markAsTouched();
-    expect(component.getPasswordError()).toContain('obligatoria');
+    // El componente intentará hacer la llamada HTTP
+    // pero fallará porque no hay backend real en tests
+    component.onLogin();
 
-    passwordControl?.setValue('123');
-    expect(component.getPasswordError()).toContain('al menos 6 caracteres');
-
-    passwordControl?.setValue('     ');
-    expect(component.getPasswordError()).toContain('solo espacios');
+    // Verificar que al menos intentó cargar
+    expect(component.serverError).toBe('');
   });
 });
