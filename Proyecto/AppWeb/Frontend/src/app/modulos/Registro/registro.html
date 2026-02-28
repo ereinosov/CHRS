@@ -1,0 +1,457 @@
+<div class="login-container">
+  <div class="login-content">
+
+    <div class="login-header">
+      <div class="logo-box">
+        <img src="imgs/logo-uteq.png" alt="UTEQ Logo" class="logo">
+      </div>
+      <h1 class="title">UTEQ</h1>
+      <p class="university">Universidad Técnica Estatal de Quevedo</p>
+      <p class="subtitle">Sistema de selección docente</p>
+    </div>
+
+    <div class="login-card">
+      <h2 class="form-title">Registro de usuario</h2>
+      <p class="form-subtitle">Complete los siguientes pasos para solicitar su cuenta</p>
+
+      <div class="progress-steps">
+        <div class="step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+          <div class="step-number">
+            <span *ngIf="currentStep <= 1">1</span>
+            <span *ngIf="currentStep > 1">✓</span>
+          </div>
+          <span class="step-label">Email</span>
+        </div>
+        <div class="step-line" [class.active]="currentStep > 1"></div>
+        <div class="step" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2">
+          <div class="step-number">
+            <span *ngIf="currentStep <= 2">2</span>
+            <span *ngIf="currentStep > 2">✓</span>
+          </div>
+          <span class="step-label">Verificar</span>
+        </div>
+        <div class="step-line" [class.active]="currentStep > 2"></div>
+        <div class="step" [class.active]="currentStep >= 3">
+          <div class="step-number">3</div>
+          <span class="step-label">Datos</span>
+        </div>
+      </div>
+
+      <form *ngIf="currentStep === 1" (ngSubmit)="enviarCodigo()">
+        <div class="form-group">
+          <label>Correo electrónico</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+            </svg>
+            <input
+              type="email"
+              class="form-input with-icon"
+              [(ngModel)]="email"
+              name="email"
+              placeholder="usuario@uteq.edu.ec"
+              required
+              [disabled]="enviandoCodigo">
+          </div>
+        </div>
+        <button type="submit" class="btn-primary btn-lg btn-block" [disabled]="!email || enviandoCodigo">
+          <svg *ngIf="enviandoCodigo" class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+          </svg>
+          <span>{{ enviandoCodigo ? 'Enviando...' : 'Enviar código' }}</span>
+        </button>
+      </form>
+
+      <form *ngIf="currentStep === 2" (ngSubmit)="verificarCodigo()">
+        <div class="verification-info">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <p>Código enviado a: <strong>{{ email }}</strong></p>
+        </div>
+        <div class="form-group">
+          <label>Código de verificación</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <input
+              type="text"
+              class="form-input with-icon code-input"
+              [(ngModel)]="codigoVerificacion"
+              name="codigo"
+              placeholder="000000"
+              maxlength="6"
+              required
+              [disabled]="cargando">
+          </div>
+        </div>
+        <button type="submit" class="btn-primary btn-lg btn-block" [disabled]="cargando || codigoVerificacion.length !== 6">
+          <svg *ngIf="cargando" class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+          </svg>
+          <span>{{ cargando ? 'Verificando...' : 'Verificar código' }}</span>
+        </button>
+        <div class="resend-code">
+          <span *ngIf="!puedeReenviar">Reenviar en {{ tiempoRestante }}s</span>
+          <button
+            type="button"
+            class="link-btn"
+            (click)="reenviarCodigo()"
+            [disabled]="!puedeReenviar || enviandoCodigo">
+            {{ puedeReenviar ? 'Reenviar código' : '' }}
+          </button>
+        </div>
+        <button type="button" class="btn-outline btn-block" (click)="volverPaso()">Volver</button>
+      </form>
+
+      <form *ngIf="currentStep === 3" (ngSubmit)="registrar()">
+
+        <div class="form-row">
+          <div class="form-group" style="flex: 0 0 35%; margin-right: 10px;">
+            <label>Tipo Doc.</label>
+            <div class="input-wrapper">
+              <select
+                class="form-input"
+                [(ngModel)]="tipoDocumento"
+                name="tipoDocumento"
+                (change)="cedula = ''">
+                <option value="CEDULA">Cédula</option>
+                <option value="PASAPORTE">Pasaporte</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label>Número Identificación</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" x2="22" y1="10" y2="10"/>
+              </svg>
+              <input
+                type="text"
+                class="form-input with-icon"
+                [(ngModel)]="cedula"
+                name="cedula"
+                (input)="onCedulaInput()"
+                [placeholder]="tipoDocumento === 'CEDULA' ? '0912345678' : 'A1234567'"
+                [maxlength]="tipoDocumento === 'CEDULA' ? 10 : 20"
+                required>
+              <svg *ngIf="cargando" class="input-spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+              </svg>
+            </div>
+            <small *ngIf="tipoDocumento === 'CEDULA' && cedula.length > 0 && cedula.length < 10" style="color: #666; font-size: 11px;">
+              Faltan dígitos ({{cedula.length}}/10)
+            </small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <input
+              type="text"
+              class="form-input"
+              [(ngModel)]="nombres"
+              name="nombres"
+              placeholder="Nombres"
+              required>
+          </div>
+          <div class="form-group">
+            <input
+              type="text"
+              class="form-input"
+              [(ngModel)]="apellidos"
+              name="apellidos"
+              placeholder="Apellidos"
+              required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Cédula / Pasaporte (PDF)</label>
+          <div class="file-upload-box" [class.has-file]="!!archivoCedula">
+            <input type="file" id="fileCedula" accept=".pdf" (change)="onFileCedulaSelected($event)" hidden>
+            <label for="fileCedula" class="file-label">
+              <div class="icon-area">
+                <svg *ngIf="!archivoCedula" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <svg *ngIf="archivoCedula" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00A63E" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+              </div>
+              <div class="text-area">
+                <span class="main-text">{{ archivoCedula ? 'Archivo seleccionado' : 'Subir archivo PDF' }}</span>
+                <span class="sub-text">{{ nombreArchivoCedula || 'Máx 5MB' }}</span>
+              </div>
+            </label>
+            <button
+              *ngIf="archivoCedula"
+              type="button"
+              class="edit-file-btn"
+              (click)="renombrarArchivo('cedula')"
+              title="Editar nombre del archivo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Selfie con Documento (Foto)</label>
+          <div class="file-upload-box" [class.has-file]="!!archivoFoto">
+            <input type="file" id="fileFoto" accept="image/*" (change)="onFileFotoSelected($event)" hidden>
+            <label for="fileFoto" class="file-label">
+              <div class="icon-area">
+                <svg *ngIf="!archivoFoto" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <svg *ngIf="archivoFoto" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00A63E" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+              </div>
+              <div class="text-area">
+                <span class="main-text">{{ archivoFoto ? 'Foto seleccionada' : 'Subir foto' }}</span>
+                <span class="sub-text">{{ nombreArchivoFoto || 'JPG o PNG, máx 5MB' }}</span>
+              </div>
+            </label>
+            <button
+              *ngIf="archivoFoto"
+              type="button"
+              class="edit-file-btn"
+              (click)="renombrarArchivo('foto')"
+              title="Editar nombre del archivo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Pre-requisitos (Títulos)</label>
+          <div class="file-upload-box" [class.has-file]="!!archivoPrerrequisitos">
+            <input type="file" id="filePre" accept=".pdf" (change)="onFilePrerrequisitosSelected($event)" hidden>
+            <label for="filePre" class="file-label">
+              <div class="icon-area">
+                <svg *ngIf="!archivoPrerrequisitos" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <svg *ngIf="archivoPrerrequisitos" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00A63E" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+              </div>
+              <div class="text-area">
+                <span class="main-text">{{ archivoPrerrequisitos ? 'Archivo seleccionado' : 'Subir Documentación (PDF)' }}</span>
+                <span class="sub-text">{{ nombreArchivoPrerrequisitos || 'Unificar en un solo PDF, máx 5MB' }}</span>
+              </div>
+            </label>
+            <button
+              *ngIf="archivoPrerrequisitos"
+              type="button"
+              class="edit-file-btn"
+              (click)="renombrarArchivo('prerrequisitos')"
+              title="Editar nombre del archivo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary btn-lg btn-block" [disabled]="cargando">
+          <svg *ngIf="cargando" class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+          </svg>
+          <span>{{ cargando ? 'Procesando...' : 'Solicitar credenciales' }}</span>
+        </button>
+        <button type="button" class="btn-outline btn-block" (click)="volverPaso()" [disabled]="cargando">Volver</button>
+      </form>
+
+      <div class="form-footer" style="margin-top: 20px; text-align: center; font-size: 14px;">
+        <span style="color: #666;">¿Ya tienes una cuenta?</span>
+        <a (click)="irALogin()" class="forgot" style="margin-left: 5px; cursor: pointer; font-weight: 600;">
+          Iniciar sesión
+        </a>
+      </div>
+    </div>
+    <!-- ============================================ -->
+    <!-- MODAL DE ÉXITO - Agregar al final del HTML -->
+    <!-- ============================================ -->
+
+    <!-- Backdrop del modal -->
+    <div class="modal-backdrop" *ngIf="mostrarModalExito" (click)="cerrarModalExito()"></div>
+
+    <!-- Modal de éxito -->
+    <div class="success-modal" *ngIf="mostrarModalExito">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+
+        <!-- Ícono de éxito animado -->
+        <div class="success-icon-wrapper">
+          <svg class="success-icon" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+            <circle class="success-circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="success-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+        </div>
+
+        <!-- Contenido del modal -->
+        <h2 class="modal-title">¡Solicitud Enviada!</h2>
+
+        <div class="modal-steps">
+
+          <!-- Paso 1: Revisión -->
+          <div class="step-item">
+            <div class="step-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div class="step-content">
+              <h3>Revisión de documentos</h3>
+              <p>Nuestro equipo verificará su información</p>
+            </div>
+          </div>
+
+          <!-- Paso 2: Correo -->
+          <div class="step-item">
+            <div class="step-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div class="step-content">
+              <h3>Credenciales por correo</h3>
+              <p>Recibirá su usuario y contraseña a <strong>{{ email }}</strong></p>
+            </div>
+          </div>
+
+          <!-- Paso 3: Acceso -->
+          <div class="step-item">
+            <div class="step-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+            </div>
+            <div class="step-content">
+              <h3>¡Listo para ingresar!</h3>
+              <p>Podrá acceder al sistema con sus credenciales</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Mensaje de agradecimiento -->
+        <div class="thank-you-message">
+          <p>Gracias por su paciencia. Le notificaremos cuando su solicitud sea aprobada.</p>
+        </div>
+
+        <!-- Botón de aceptar -->
+        <button class="btn-primary modal-btn" (click)="cerrarModalExito()">
+          Entendido
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Backdrop del modal de error -->
+    <div class="modal-backdrop" *ngIf="mostrarModalError" (click)="cerrarModalError()"></div>
+
+    <!-- Modal de error -->
+    <div class="error-modal" *ngIf="mostrarModalError">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+
+        <!-- Ícono de error animado -->
+        <div class="error-icon-wrapper">
+          <svg class="error-icon" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+            <circle class="error-circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="error-x" fill="none" d="M16 16 L36 36 M36 16 L16 36"/>
+          </svg>
+        </div>
+
+        <!-- Contenido del modal -->
+        <h2 class="modal-title error-title">Código Incorrecto</h2>
+
+        <div class="error-message-box">
+          <p class="error-main-text">
+            El código de verificación que ingresaste no es válido o ha expirado.
+          </p>
+        </div>
+
+        <!-- Opciones de acción -->
+        <div class="error-actions">
+
+          <div class="action-card">
+            <div class="action-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="action-content">
+              <h3>Revisa tu correo</h3>
+              <p>Verifica que ingresaste el código correcto de 6 dígitos</p>
+            </div>
+          </div>
+
+          <div class="action-card" *ngIf="puedeReenviar">
+            <div class="action-icon reenviar">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </div>
+            <div class="action-content">
+              <h3>Solicita uno nuevo</h3>
+              <p>Puedes pedir que te enviemos un código nuevo</p>
+            </div>
+          </div>
+
+          <div class="action-card" *ngIf="!puedeReenviar">
+            <div class="action-icon waiting">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="action-content">
+              <h3>Espera {{ tiempoRestante }}s</h3>
+              <p>Podrás solicitar un nuevo código cuando termine el tiempo</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="modal-buttons">
+          <button
+            class="btn-primary modal-btn"
+            (click)="cerrarModalError()">
+            Intentar de Nuevo
+          </button>
+
+          <button
+            class="btn-outline modal-btn-secondary"
+            *ngIf="puedeReenviar"
+            (click)="cerrarModalError(); reenviarCodigo()">
+            Reenviar Código
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="form-footer">
+      © 2026 Universidad Técnica Estatal de Quevedo
+    </div>
+  </div>
+</div>

@@ -1,34 +1,16 @@
 package org.uteq.backend.controller;
 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api")
-@CrossOrigin (origins = "http://localhost:4200")
+@RequestMapping("/api/test")
 public class TestController {
-    @GetMapping("/test")
+
+    @GetMapping
     public String test() {
-        return "Conexión establecida correctamente";
+        return "El controlador funciona!";
     }
 
-    @GetMapping("/saludo/{nombre}")
-    public String saludo(@PathVariable String nombre) {
-        return "Hola " + nombre;
-    }
-
-    @PostMapping("/mensaje")
-    public String mensaje(@RequestBody Mensaje mensaje) {
-        return "Recibí el siguiente mensaje: " + mensaje.getMensaje();
-    }
-}
-
-class Mensaje{
-    private String mensaje;
-    public String getMensaje() {
-        return mensaje;
-    }
-
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
-    }
 }

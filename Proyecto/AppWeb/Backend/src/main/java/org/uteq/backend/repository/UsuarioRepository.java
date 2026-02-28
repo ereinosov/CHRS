@@ -1,14 +1,20 @@
 package org.uteq.backend.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-import org.uteq.backend.entities.usuario;
+import org.uteq.backend.entity.Usuario;
+import java.util.List;
+
 import java.util.Optional;
 
 @Repository
-public interface UsuarioRepository extends JpaRepository<usuario, Long> {
-    Optional<usuario> findByUsuarioApp(String usuarioApp);
-    Optional<usuario> findByUsuarioBd(String usuarioBd);
-    boolean existsByUsuarioBd(String usuarioBd); // Asegúrate de que la 'u' sea minúscula
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+    Optional<Usuario> findByUsuarioApp(String usuarioApp);
+    Optional<Usuario> findByCorreo(String correo);
+    boolean existsByUsuarioBd(String usuarioBd);
+
     boolean existsByUsuarioApp(String usuarioApp);
+    boolean existsByCorreo(String correo);
+    List<Usuario> findAll();
 }

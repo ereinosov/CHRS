@@ -3,164 +3,97 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './login.html',
+  templateUrl: './login.html', // Asegúrate que el nombre coincida con tu archivo
   styleUrls: ['./login.scss']
 })
-export class LoginComponent {
-  // 1. Limpieza de datos: Aseguramos strings vacíos para evitar nulos
+export class LoginComponent  implements OnInit{
   usuarioApp: string = '';
   claveApp: string = '';
+  recordarme: boolean = false;
 
-  // Variables de estado y control
   showPassword = false;
   isLoading = false;
-  serverError = '';
-
-  // Mensajes de validación en tiempo real
-  userTouched = false;
-  passTouched = false;
+  serverError: string = '';
 
   constructor(
     private authService: AuthService,
     private router: Router
   ) {}
 
-  // --- VALIDACIONES DE NEGOCIO ---
-
-  /**
-   * Valida el formato del usuario.
-   * Previene espacios en blanco y requiere longitud mínima.
-   */
-  isUsuarioValido(): boolean {
-    const usuarioClean = this.usuarioApp.trim();
-    return usuarioClean.length >= 3 && usuarioClean.length <= 20;
-  }
-
-  /**
-   * Valida la integridad de la contraseña.
-   * Verifica longitud mínima para evitar peticiones innecesarias al server.
-   */
-  isClaveValida(): boolean {
-    return this.claveApp.length >= 4;
-  }
-
-  /**
-   * Validador maestro para el botón de envío.
-   * Bloquea el botón si hay campos inválidos o una petición en curso.
-   */
-  canSubmit(): boolean {
-    return this.isUsuarioValido() && this.isClaveValida() && !this.isLoading;
-  }
 
   togglePassword() {
     this.showPassword = !this.showPassword;
   }
 
   onLogin() {
-    // 1. Sanitización de entradas
-    this.usuarioApp = this.usuarioApp.trim();
+    // 1. Limpieza inicial
     this.serverError = '';
 
-    // 2. Validación de Pre-vuelo (Pre-flight validation)
-    if (!this.canSubmit()) {
-      this.serverError = 'Por favor, revise que los datos ingresados sean correctos.';
+    // Validación simple
+    if (!this.usuarioApp || !this.claveApp) {
+      this.serverError = 'Por favor, ingrese usuario y contraseña.';
       return;
     }
 
     this.isLoading = true;
+    console.log('Intentando login con:', this.usuarioApp); // Debug
 
-    // 3. Control de Timeout (Seguridad de red)
-    const timeoutId = setTimeout(() => {
-      if (this.isLoading) {
-        this.isLoading = false;
-        this.serverError = 'Tiempo de espera agotado. Verifique su conexión.';
-      }
-    }, 10000); // 10 segundos de margen
-
+    // 2. Petición al servicio
+    // NOTA: Asegúrate que tu authService.login acepte (usuario, clave) y no un objeto {usuario, clave}
     this.authService.login(this.usuarioApp, this.claveApp).subscribe({
       next: (res: any) => {
-        clearTimeout(timeoutId);
         this.isLoading = false;
+        console.log('Login exitoso:', res);
 
-        // 4. Validación de Integridad de Respuesta del Backend
-        if (res && res.success) {
-          console.log('Login verificado correctamente');
+        if (res && res.token) {
+          // Guardar sesión
+          this.authService.guardarSesion(res, this.recordarme);
 
-          // 5. Normalización de Datos (Parche para campos null en BD)
-          const userData = {
-            ...res,
-            rol: res.rol || this.mapRolIdToName(res.id_rol)
-          };
 
-          // 6. Persistencia de Sesión Segura
-          this.authService.guardarSesion(userData);
+          // Redirigir usando la lógica del servicio o manual
+          // Si tu authService tiene 'redirigirPorRol', úsalo:
+          this.authService.redirigirPorRol();
 
-          // 7. Redirección Controlada por Roles
-          this.executeRedirection(res.id_rol);
-
+          // O si prefieres hacerlo manual aquí:
+          // this.executeRedirection(res.roles ? res.roles[0] : 'invitado');
         } else {
-          // Error controlado por el Backend (ej: Credenciales incorrectas)
-          this.serverError = res?.error || 'No se pudo validar el acceso.';
+          this.serverError = 'Error: No se recibió el token de seguridad.';
         }
       },
       error: (err) => {
-        this.isLoading = false;
-        clearTimeout(timeoutId);
-        this.handleHttpErrors(err);
+        this.isLoading = false; // IMPORTANTE: Apagamos el spinner
+        console.error('Error login:', err);
+
+        if (err.status === 401) {
+          this.serverError = 'Usuario o contraseña incorrectos.';
+        } else if (err.status === 0) {
+          this.serverError = 'No se pudo conectar con el servidor. Revise su internet o si el backend está encendido.';
+        } else {
+          this.serverError = 'Ocurrió un error inesperado. Intente más tarde.';
+        }
       }
     });
   }
+  ngOnInit() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.router.navigate(['/'], { replaceUrl: true });
+    }
 
-  /**
-   * Mapea IDs de rol a nombres internos para el AuthGuard.
-   */
-  private mapRolIdToName(id: number): string {
-    const roles: { [key: number]: string } = {
-      3: 'admin',
-      2: 'postulante',
-      1: 'evaluador'
-    };
-    return roles[id] || 'invitado';
   }
 
-  /**
-   * Ejecuta la navegación basada en el ID de rol.
-   */
-  private executeRedirection(idRol: number) {
-    const routes: { [key: number]: string } = {
-      3: '/admin',
-      2: '/postulante',
-      1: '/evaluador'
-    };
-
-    const target = routes[idRol];
-    if (target) {
-      this.router.navigate([target]).catch(() => {
-        this.serverError = 'Error al intentar acceder al módulo solicitado.';
-      });
-    } else {
-      this.serverError = 'Su cuenta no tiene un módulo asignado.';
-    }
+  irAConvocatorias() {
+    this.router.navigate(['/convocatorias']);
   }
 
-  /**
-   * Manejador de excepciones de red y servidor.
-   */
-  private handleHttpErrors(err: any) {
-    console.error('Error capturado:', err);
-    if (err.status === 0) {
-      this.serverError = 'Servidor inaccesible. Verifique que el backend esté activo.';
-    } else if (err.status === 401) {
-      this.serverError = 'Credenciales inválidas.';
-    } else if (err.status === 500) {
-      this.serverError = 'Error crítico en el servidor. Contacte a soporte.';
-    } else {
-      this.serverError = 'Ocurrió un error inesperado al iniciar sesión.';
-    }
+  // ✅ nuevo
+  irARecuperarClave() {
+    this.router.navigate(['/recuperar-clave']);
   }
 }

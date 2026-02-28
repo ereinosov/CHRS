@@ -1,20 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Login } from './login';
+import { LoginComponent } from './login'; // ✅ Importamos la clase correcta
 import { FormsModule } from '@angular/forms';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 
 describe('LoginComponent', () => {
-  let component: Login;
-  let fixture: ComponentFixture<Login>;
+  // ✅ Usamos LoginComponent en lugar de Login
+  let component: LoginComponent;
+  let fixture: ComponentFixture<LoginComponent>;
   let router: Router;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
         FormsModule,
-        Login
+        LoginComponent // ✅ Aquí también
       ],
       providers: [
         provideHttpClient(),
@@ -22,7 +23,7 @@ describe('LoginComponent', () => {
       ]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Login);
+    fixture = TestBed.createComponent(LoginComponent); // ✅ Y aquí
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
     fixture.detectChanges();
@@ -56,7 +57,8 @@ describe('LoginComponent', () => {
 
     component.onLogin();
 
-    expect(component.serverError).toBe('Por favor complete todos los campos');
+    // ⚠️ IMPORTANTE: Este texto debe ser EXACTAMENTE IGUAL al que pusiste en login.ts
+    expect(component.serverError).toBe('Por favor ingrese usuario y contraseña');
   });
 
   it('should not call backend when fields are empty', () => {
@@ -73,11 +75,12 @@ describe('LoginComponent', () => {
     component.usuarioApp = 'testuser';
     component.claveApp = 'testpass';
 
-    // El componente intentará hacer la llamada HTTP
-    // pero fallará porque no hay backend real en tests
+    // El componente intentará hacer la llamada
     component.onLogin();
 
-    // Verificar que al menos intentó cargar
+    // Verificamos que se limpió el error y se activó la carga
     expect(component.serverError).toBe('');
+    // Nota: Como usamos setTimeout en el componente, isLoading será true inmediatamente
+    expect(component.isLoading).toBe(true);
   });
 });
