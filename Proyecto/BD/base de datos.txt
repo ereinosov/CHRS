@@ -1,0 +1,485 @@
+
+-- roles de aplicación: ADMIN, POSTULANTE, EVALUADOR, REVISOR, etc.
+-- el setup_inicial los inserta y los mapea a roles de bd de postgresql
+create table public.roles_app (
+    id_rol_app     integer generated always as identity not null,
+    nombre         character varying not null unique,
+    descripcion    text,
+    activo         boolean not null,
+    fecha_creacion timestamp without time zone not null default current_timestamp,
+    constraint roles_app_pkey primary key (id_rol_app)
+);
+
+-- qué roles de bd de postgresql requiere cada rol de app
+create table public.roles_app_bd (
+    id             integer generated always as identity not null,
+    id_rol_app     integer not null,
+    nombre_rol_bd  character varying not null,
+    fecha_creacion timestamp without time zone not null default current_timestamp,
+    constraint roles_app_bd_pkey primary key (id),
+    constraint roles_app_bd_uk unique (id_rol_app, nombre_rol_bd),
+    constraint fk_roles_app_bd_rol
+        foreign key (id_rol_app) references public.roles_app(id_rol_app) on delete cascade
+);
+
+
+-- ============================================
+-- usuarios
+-- ============================================
+
+-- clave_bd en varchar
+-- primer_login fuerza cambio de contraseña en el primer acceso
+create table public.usuario (
+    id_usuario     bigint generated always as identity not null,
+    usuario_bd     character varying not null,
+    clave_bd       character varying not null,
+    usuario_app    character varying not null,
+    clave_app      character varying not null,
+    correo         character varying not null,
+    activo         boolean not null default true,
+    primer_login   boolean not null default true,
+    fecha_creacion timestamp without time zone not null default current_timestamp,
+    constraint usuario_pkey primary key (id_usuario),
+    constraint usuario_usuario_bd_uk  unique (usuario_bd),
+    constraint usuario_usuario_app_uk unique (usuario_app)
+);
+
+create unique index ux_usuario_correo
+    on public.usuario (correo)
+    where correo is not null;
+
+-- pivot usuario ↔ rol_app
+-- de aquí spring lee qué rol tiene el usuario conectado
+create table public.usuario_roles_app (
+    id_usuario bigint not null,
+    id_rol_app integer not null,
+    constraint usuario_roles_app_pkey primary key (id_usuario, id_rol_app),
+    constraint fk_ura_usuario
+        foreign key (id_usuario) references public.usuario(id_usuario) on delete cascade,
+    constraint fk_ura_rol_app
+        foreign key (id_rol_app) references public.roles_app(id_rol_app) on delete cascade
+);
+
+
+-- ============================================
+-- institución y autoridad
+-- ============================================
+
+create table public.institucion (
+    id_institucion bigint generated always as identity not null,
+    nombre         character varying not null,
+    direccion      character varying not null,
+    correo         character varying not null,
+    telefono       character varying,
+    constraint institucion_pkey primary key (id_institucion)
+);
+
+-- la autoridad se identifica por su usuario y sus roles en usuario_roles_app
+-- no hay tabla de cargo separada
+create table public.autoridad_academica (
+    id_autoridad     bigint generated always as identity not null,
+    nombres          character varying not null,
+    apellidos        character varying not null,
+    correo           character varying not null,
+    fecha_nacimiento date not null,
+    estado           boolean not null default true,
+    id_usuario       bigint not null,
+    id_institucion   bigint not null,
+    constraint autoridad_academica_pkey primary key (id_autoridad),
+    constraint fk_autoridad_usuario
+        foreign key (id_usuario) references public.usuario(id_usuario) on delete cascade,
+    constraint fk_autoridad_institucion
+        foreign key (id_institucion) references public.institucion(id_institucion) on delete restrict
+);
+
+create unique index ux_autoridad_correo on public.autoridad_academica (correo);
+
+-- decano: autoridad asignada a una facultad
+create table public.autoridad_facultad (
+    id_autoridad bigint not null,
+    id_facultad  bigint not null,
+    constraint autoridad_facultad_pkey primary key (id_autoridad, id_facultad),
+    constraint fk_af_autoridad
+        foreign key (id_autoridad) references public.autoridad_academica(id_autoridad) on delete cascade,
+    constraint fk_af_facultad
+        foreign key (id_facultad) references public.facultad(id_facultad) on delete cascade
+);
+
+-- coordinador: autoridad asignada a una carrera
+create table public.autoridad_carrera (
+    id_autoridad bigint not null,
+    id_carrera   bigint not null,
+    constraint autoridad_carrera_pkey primary key (id_autoridad, id_carrera),
+    constraint fk_ac_autoridad
+        foreign key (id_autoridad) references public.autoridad_academica(id_autoridad) on delete cascade,
+    constraint fk_ac_carrera
+        foreign key (id_carrera) references public.carrera(id_carrera) on delete cascade
+);
+
+
+-- ============================================
+-- maestros (datos base)
+-- ============================================
+
+create table public.area_conocimiento (
+    id_area     bigint generated always as identity not null,
+    nombre_area character varying not null,
+    constraint area_conocimiento_pkey primary key (id_area)
+);
+
+create table public.facultad (
+    id_facultad     bigint generated always as identity not null,
+    nombre_facultad character varying not null,
+    estado          boolean not null,
+    constraint facultad_pkey primary key (id_facultad)
+);
+
+create table public.carrera (
+    id_carrera     bigint generated always as identity not null,
+    id_facultad    bigint not null,
+    nombre_carrera character varying not null,
+    modalidad      character varying not null,
+    estado         boolean not null,
+    constraint carrera_pkey primary key (id_carrera),
+    constraint fk_carrera_facultad
+        foreign key (id_facultad) references public.facultad(id_facultad) on delete restrict
+);
+
+create table public.materia (
+    id_materia     bigint generated always as identity not null,
+    id_carrera     bigint not null,
+    nombre_materia character varying not null,
+    nivel          bigint not null,
+    constraint materia_pkey primary key (id_materia),
+    constraint fk_materia_carrera
+        foreign key (id_carrera) references public.carrera(id_carrera) on delete restrict
+);
+
+create table public.tipo_documento (
+    id_tipo_documento bigint generated always as identity not null,
+    nombre            character varying not null,
+    descripcion       character varying,
+    obligatorio       boolean not null,
+    activo            boolean not null,
+    constraint tipo_documento_pkey primary key (id_tipo_documento)
+);
+
+
+-- ============================================
+-- solicitud / resolución / convocatoria
+-- ============================================
+
+-- justificacion y observaciones como text
+create table public.solicitud_docente (
+    id_solicitud                bigint generated always as identity not null,
+    id_autoridad                bigint not null,
+    id_carrera                  bigint not null,
+    id_materia                  bigint not null,
+    id_area                     bigint not null,
+    fecha_solicitud             timestamp without time zone not null default current_timestamp,
+    estado_solicitud            character varying not null default 'pendiente',
+    justificacion               text not null,
+    cantidad_docentes           bigint not null,
+    nivel_academico             character varying not null,
+    experiencia_profesional_min bigint not null,
+    experiencia_docente_min     bigint not null,
+    observaciones               text,
+    constraint solicitud_docente_pkey primary key (id_solicitud),
+    constraint fk_solicitud_autoridad
+        foreign key (id_autoridad) references public.autoridad_academica(id_autoridad) on delete restrict,
+    constraint fk_solicitud_carrera
+        foreign key (id_carrera) references public.carrera(id_carrera) on delete restrict,
+    constraint fk_solicitud_materia
+        foreign key (id_materia) references public.materia(id_materia) on delete restrict,
+    constraint fk_solicitud_area
+        foreign key (id_area) references public.area_conocimiento(id_area) on delete restrict,
+    constraint ck_solicitud_estado
+        check (estado_solicitud in ('pendiente','aprobada','rechazada','observada'))
+);
+
+-- resolución que aprueba formalmente una solicitud
+create table public.resolucion (
+    id_resolucion     bigint generated always as identity not null,
+    id_solicitud      bigint not null unique,
+    id_aprobador      bigint not null,
+    numero_resolucion character varying not null unique,
+    fecha_emision     date not null,
+    estado            character varying not null,
+    observaciones     character varying,
+    constraint resolucion_pkey primary key (id_resolucion),
+    constraint fk_resolucion_solicitud
+        foreign key (id_solicitud) references public.solicitud_docente(id_solicitud) on delete restrict,
+    constraint fk_resolucion_aprobador
+        foreign key (id_aprobador) references public.autoridad_academica(id_autoridad) on delete restrict,
+    constraint ck_resolucion_estado
+        check (estado in ('aprobada','rechazada','pendiente'))
+);
+
+create table public.convocatoria (
+    id_convocatoria     bigint generated always as identity not null,
+    titulo              character varying not null,
+    descripcion         character varying not null,
+    fecha_publicacion   date not null,
+    fecha_inicio        date not null,
+    fecha_fin           date not null,
+    estado_convocatoria character varying not null default 'abierta',
+    constraint convocatoria_pkey primary key (id_convocatoria),
+    constraint ck_convocatoria_estado
+        check (estado_convocatoria in ('abierta','cerrada','cancelada'))
+);
+
+-- pk compuesta limpia, sin columna id suelta
+create table public.convocatoria_solicitud (
+    id_convocatoria bigint not null,
+    id_solicitud    bigint not null,
+    constraint convocatoria_solicitud_pkey primary key (id_convocatoria, id_solicitud),
+    constraint fk_cs_convocatoria
+        foreign key (id_convocatoria) references public.convocatoria(id_convocatoria) on delete cascade,
+    constraint fk_cs_solicitud
+        foreign key (id_solicitud) references public.solicitud_docente(id_solicitud) on delete cascade
+);
+
+
+-- ============================================
+-- prepostulación
+-- ============================================
+
+-- url_cedula / url_foto / url_prerrequisitos: diseño actual, se mantienen
+-- documento_temporal cubre archivos adicionales aparte de esas tres urls
+create table public.prepostulacion (
+    id_prepostulacion      bigint generated always as identity not null,
+    nombres                character varying not null,
+    apellidos              character varying not null,
+    identificacion         character varying not null unique,
+    correo                 character varying not null,
+    fecha_envio            timestamp without time zone not null default current_timestamp,
+    estado_revision        character varying not null default 'pendiente',
+    id_revisor             bigint,
+    fecha_revision         timestamp without time zone,
+    observaciones_revision character varying,
+    url_cedula             character varying,
+    url_foto               character varying,
+    url_prerrequisitos     character varying,
+    constraint prepostulacion_pkey primary key (id_prepostulacion),
+    constraint fk_prepostulacion_revisor
+        foreign key (id_revisor) references public.autoridad_academica(id_autoridad) on delete set null,
+    constraint ck_prepostulacion_estado
+        check (estado_revision in ('pendiente','aprobada','rechazada','observada'))
+);
+
+create table public.prepostulacion_solicitud (
+    id_prepostulacion bigint not null,
+    id_solicitud      bigint not null,
+    constraint prepostulacion_solicitud_pkey primary key (id_prepostulacion, id_solicitud),
+    constraint fk_ps_prepostulacion
+        foreign key (id_prepostulacion) references public.prepostulacion(id_prepostulacion) on delete cascade,
+    constraint fk_ps_solicitud
+        foreign key (id_solicitud) references public.solicitud_docente(id_solicitud) on delete cascade
+);
+
+-- nombre_original y tamano_bytes
+
+create table public.documento_temporal (
+    id_documento_temporal bigint generated always as identity not null,
+    id_prepostulacion     bigint not null,
+    id_tipo_documento     bigint not null,
+    fecha_carga           timestamp without time zone not null default current_timestamp,
+    ruta_archivo          text not null,
+    nombre_original       character varying,
+    tamano_bytes          bigint,
+    constraint documento_temporal_pkey primary key (id_documento_temporal),
+    constraint fk_doc_temp_prepostulacion
+        foreign key (id_prepostulacion) references public.prepostulacion(id_prepostulacion) on delete cascade,
+    constraint fk_doc_temp_tipo
+        foreign key (id_tipo_documento) references public.tipo_documento(id_tipo_documento) on delete restrict
+);
+
+
+-- ============================================
+-- postulante / postulación / documentos
+-- ============================================
+
+create table public.postulante (
+    id_postulante        bigint generated always as identity not null,
+    id_prepostulacion    bigint unique,
+    nombres_postulante   character varying not null,
+    apellidos_postulante character varying not null,
+    identificacion       character varying not null unique,
+    correo_postulante    character varying not null,
+    telefono_postulante  character varying not null,
+    fecha_nacimiento     date not null,
+    id_usuario           bigint not null,
+    constraint postulante_pkey primary key (id_postulante),
+    constraint fk_postulante_usuario
+        foreign key (id_usuario) references public.usuario(id_usuario) on delete restrict,
+    constraint fk_postulante_prepostulacion
+        foreign key (id_prepostulacion) references public.prepostulacion(id_prepostulacion) on delete set null
+);
+
+create table public.postulacion (
+    id_postulacion     bigint generated always as identity not null,
+    id_postulante      bigint not null,
+    id_solicitud       bigint not null,
+    fecha              timestamp without time zone not null default current_timestamp,
+    estado_postulacion character varying not null default 'pendiente',
+    preseleccion       boolean,
+    constraint postulacion_pkey primary key (id_postulacion),
+    constraint fk_postulacion_postulante
+        foreign key (id_postulante) references public.postulante(id_postulante) on delete cascade,
+    constraint fk_postulacion_solicitud
+        foreign key (id_solicitud) references public.solicitud_docente(id_solicitud) on delete restrict,
+    constraint unique_postulante_solicitud unique (id_postulante, id_solicitud),
+    constraint ck_postulacion_estado
+        check (estado_postulacion in ('pendiente','en_revision','aprobada','rechazada'))
+);
+
+-- ruta_archivo como varchar
+create table public.documento (
+    id_documento          bigint generated always as identity not null,
+    id_postulacion        bigint not null,
+    id_tipo_documento     bigint not null,
+    id_documento_temporal bigint,
+    fecha_carga           timestamp without time zone not null default current_timestamp,
+    estado_validacion     character varying not null default 'pendiente',
+    ruta_archivo          character varying not null,
+    constraint documento_pkey primary key (id_documento),
+    constraint fk_documento_postulacion
+        foreign key (id_postulacion) references public.postulacion(id_postulacion) on delete cascade,
+    constraint fk_documento_tipo
+        foreign key (id_tipo_documento) references public.tipo_documento(id_tipo_documento) on delete restrict,
+    constraint fk_documento_temporal
+        foreign key (id_documento_temporal) references public.documento_temporal(id_documento_temporal) on delete set null,
+    constraint ck_documento_validacion
+        check (estado_validacion in ('pendiente','validado','rechazado'))
+);
+
+create table public.resultados_ia_documento (
+    id_resultado_ia_documento bigint generated always as identity not null,
+    id_documento              bigint not null,
+    resultado                 character varying not null,
+    observaciones             character varying,
+    fecha_revision            timestamp without time zone not null default current_timestamp,
+    constraint resultados_ia_documento_pkey primary key (id_resultado_ia_documento),
+    constraint fk_resultado_ia_documento
+        foreign key (id_documento) references public.documento(id_documento) on delete cascade
+);
+
+
+-- ============================================
+-- evaluación / entrevista / informe
+-- ============================================
+
+create table public.criterio_evaluacion (
+    id_criterio    bigint generated always as identity not null,
+    nombre         character varying not null,
+    puntaje_maximo numeric not null,
+    estado         boolean not null default true,
+    id_area        bigint not null,
+    constraint criterio_evaluacion_pkey primary key (id_criterio),
+    constraint fk_criterio_area
+        foreign key (id_area) references public.area_conocimiento(id_area) on delete restrict
+);
+
+-- id_decano e id_coordinador apuntan a autoridad_academica
+-- se sabe que son decano/coordinador por autoridad_facultad y autoridad_carrera
+create table public.evaluacion_meritos (
+    id_evaluacion    bigint generated always as identity not null,
+    id_postulacion   bigint not null,
+    id_decano        bigint not null,
+    id_coordinador   bigint not null,
+    puntaje          numeric,
+    observaciones    character varying,
+    fecha_evaluacion date,
+    constraint evaluacion_meritos_pkey primary key (id_evaluacion),
+    constraint fk_eval_postulacion
+        foreign key (id_postulacion) references public.postulacion(id_postulacion) on delete cascade,
+    constraint fk_eval_decano
+        foreign key (id_decano) references public.autoridad_academica(id_autoridad) on delete restrict,
+    constraint fk_eval_coordinador
+        foreign key (id_coordinador) references public.autoridad_academica(id_autoridad) on delete restrict
+);
+
+create table public.calificacion_evaluacion (
+    id_calificacion  bigint generated always as identity not null,
+    id_evaluacion    bigint not null,
+    id_criterio      bigint not null,
+    puntaje_obtenido numeric not null,
+    observaciones    character varying,
+    constraint calificacion_evaluacion_pkey primary key (id_calificacion),
+    constraint fk_calificacion_evaluacion
+        foreign key (id_evaluacion) references public.evaluacion_meritos(id_evaluacion) on delete cascade,
+    constraint fk_calificacion_criterio
+        foreign key (id_criterio) references public.criterio_evaluacion(id_criterio) on delete restrict
+);
+
+create table public.entrevista (
+    id_entrevista    bigint generated always as identity not null,
+    id_postulacion   bigint not null,
+    id_decano        bigint not null,
+    id_coordinador   bigint not null,
+    modalidad        character varying not null check (modalidad in ('presencial','virtual')),
+    fecha_entrevista timestamp without time zone,
+    lugar            character varying,
+    enlace           character varying,
+    puntaje          numeric,
+    observaciones    character varying,
+    constraint entrevista_pkey primary key (id_entrevista),
+    constraint fk_entrevista_postulacion
+        foreign key (id_postulacion) references public.postulacion(id_postulacion) on delete cascade,
+    constraint fk_entrevista_decano
+        foreign key (id_decano) references public.autoridad_academica(id_autoridad) on delete restrict,
+    constraint fk_entrevista_coordinador
+        foreign key (id_coordinador) references public.autoridad_academica(id_autoridad) on delete restrict
+);
+
+create table public.resultados_ia_entrevista (
+    id_resultado_ia_entrevista bigint generated always as identity not null,
+    id_entrevista              bigint not null,
+    analisis_gestos            text,
+    analisis_comunicacion      text,
+    analisis_lenguaje_corporal text,
+    confianza_detectada        numeric,
+    resumen_general            text,
+    observaciones              character varying,
+    fecha_analisis             timestamp without time zone not null default current_timestamp,
+    constraint resultados_ia_entrevista_pkey primary key (id_resultado_ia_entrevista),
+    constraint fk_resultado_ia_entrevista
+        foreign key (id_entrevista) references public.entrevista(id_entrevista) on delete cascade
+);
+
+create table public.informe_final (
+    id_informe      bigint generated always as identity not null,
+    id_postulacion  bigint not null,
+    fecha_emision   timestamp without time zone not null default current_timestamp,
+    resultado_final character varying not null,
+    observaciones   character varying not null,
+    constraint informe_final_pkey primary key (id_informe),
+    constraint fk_informe_postulacion
+        foreign key (id_postulacion) references public.postulacion(id_postulacion) on delete cascade
+);
+
+
+-- ============================================
+-- auditoría de login
+-- ip_cliente como varchar 
+-- usuario_app nullable para cubrir intentos con usuario inválido
+-- ============================================
+
+create table public.aud_login_app (
+    id_aud      bigint generated always as identity not null,
+    fecha       timestamp without time zone not null default current_timestamp,
+    usuario_app character varying,
+    usuario_bd  character varying,
+    resultado   character varying not null,
+    motivo      character varying,
+    ip_cliente  character varying,
+    user_agent  character varying,
+    id_usuario  bigint,
+    constraint aud_login_app_pkey primary key (id_aud)
+);
+
+create index idx_aud_login_fecha      on public.aud_login_app (fecha desc);
+create index idx_aud_login_resultado  on public.aud_login_app (resultado);
+create index idx_aud_login_usuarioapp on public.aud_login_app (usuario_app);
+
+
